@@ -1,0 +1,88 @@
+<div class="max-w-md mx-auto p-4" data-controller="timer"
+     data-timer-exercise-seconds-value="30"
+     data-timer-rest-seconds-value="15"
+     data-timer-total-sets-value="5">
+
+  <!-- Header -->
+  <div class="flex items-center mb-6">
+    <%= link_to root_path, class: "p-2 hover:bg-gray-100 rounded" do %>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    <% end %>
+    <h1 class="text-2xl font-bold flex-1 text-center mr-8">Interval Timer</h1>
+  </div>
+
+  <!-- Timer Display -->
+  <div class="bg-gray-100 rounded-2xl p-8 mb-6">
+    <!-- Phase indicator -->
+    <div class="text-center mb-4">
+      <span data-timer-target="phase" class="inline-block px-4 py-1 rounded-full text-white font-semibold bg-green-500">
+        Exercise
+      </span>
+    </div>
+
+    <!-- Time display -->
+    <div class="text-center">
+      <span data-timer-target="display" class="text-7xl font-mono font-bold text-gray-800">
+        00:30
+      </span>
+    </div>
+
+    <!-- Set info -->
+    <div class="text-center mt-4">
+      <span data-timer-target="setInfo" class="text-xl text-gray-600">
+        Set 1 / 5
+      </span>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="mt-6 h-2 bg-gray-300 rounded-full overflow-hidden">
+      <div data-timer-target="progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="flex justify-center gap-4 mb-8">
+    <button data-timer-target="startBtn" data-action="click->timer#start"
+            class="px-8 py-4 bg-green-500 text-white font-bold text-lg rounded-xl hover:bg-green-600 transition-colors">
+      Start
+    </button>
+    <button data-timer-target="pauseBtn" data-action="click->timer#pause"
+            class="hidden px-8 py-4 bg-yellow-500 text-white font-bold text-lg rounded-xl hover:bg-yellow-600 transition-colors">
+      Pause
+    </button>
+    <button data-timer-target="resetBtn" data-action="click->timer#reset"
+            class="px-8 py-4 bg-gray-500 text-white font-bold text-lg rounded-xl hover:bg-gray-600 transition-colors">
+      Reset
+    </button>
+  </div>
+
+  <!-- Settings -->
+  <div class="bg-gray-50 rounded-xl p-6">
+    <h2 class="text-lg font-semibold mb-4 text-gray-700">Settings</h2>
+
+    <div class="space-y-4">
+      <div class="flex items-center justify-between">
+        <label class="text-gray-600">Exercise (sec)</label>
+        <input type="number" value="30" min="5" max="300" step="5"
+               data-action="change->timer#updateExercise"
+               class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <div class="flex items-center justify-between">
+        <label class="text-gray-600">Rest (sec)</label>
+        <input type="number" value="15" min="5" max="120" step="5"
+               data-action="change->timer#updateRest"
+               class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <div class="flex items-center justify-between">
+        <label class="text-gray-600">Sets</label>
+        <input type="number" value="5" min="1" max="20"
+               data-action="change->timer#updateSets"
+               class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+    </div>
+  </div>
+</div>
