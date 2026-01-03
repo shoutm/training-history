@@ -14,4 +14,10 @@ Rails.application.routes.draw do
 
   post "toggle/:date", to: "workout_logs#toggle", as: :toggle_workout
   get "timer", to: "timer#show", as: :timer
+
+  # Authentication
+  get "login", to: "sessions#new", as: :login
+  get "auth/:provider/callback", to: "sessions#create"
+  get "auth/failure", to: "sessions#failure"
+  delete "logout", to: "sessions#destroy", as: :logout
 end

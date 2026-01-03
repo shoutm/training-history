@@ -24,6 +24,30 @@
   </head>
 
   <body class="bg-white min-h-screen">
+    <% if logged_in? %>
+      <header class="bg-white border-b border-gray-200">
+        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <% if current_user.avatar_url.present? %>
+              <img src="<%= current_user.avatar_url %>" alt="Avatar" class="w-8 h-8 rounded-full">
+            <% end %>
+            <span class="text-sm text-gray-700"><%= current_user.name %></span>
+          </div>
+          <%= button_to logout_path, method: :delete, class: "text-sm text-gray-500 hover:text-gray-700" do %>
+            Logout
+          <% end %>
+        </div>
+      </header>
+    <% end %>
+
+    <% if flash[:notice] %>
+      <div class="max-w-md mx-auto px-4 mt-4">
+        <div class="p-3 bg-green-100 text-green-700 rounded-lg text-sm">
+          <%= flash[:notice] %>
+        </div>
+      </div>
+    <% end %>
+
     <%= yield %>
   </body>
 </html>
