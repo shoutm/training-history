@@ -25,6 +25,7 @@ export default class extends Controller {
     this.isExercise = true
     this.isRunning = false
     this.isPaused = false
+    this.isCompleted = false
     clearInterval(this.timer)
 
     if (this.isPresetMode) {
@@ -47,7 +48,7 @@ export default class extends Controller {
   }
 
   start() {
-    if (this.isRunning) return
+    if (this.isRunning || this.isCompleted) return
     this.isRunning = true
     this.isPaused = false
     this.toggleButtons()
@@ -80,8 +81,10 @@ export default class extends Controller {
     } else {
       this.nextPhaseSimple()
     }
-    this.updateDisplay()
-    this.updateExerciseListHighlight()
+    if (!this.isCompleted) {
+      this.updateDisplay()
+      this.updateExerciseListHighlight()
+    }
   }
 
   nextPhaseSimple() {
@@ -129,6 +132,7 @@ export default class extends Controller {
   complete() {
     clearInterval(this.timer)
     this.isRunning = false
+    this.isCompleted = true
     this.phaseTarget.textContent = "Complete!"
     this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500")
     this.phaseTarget.classList.add("bg-blue-500")
@@ -186,7 +190,7 @@ export default class extends Controller {
   }
 
   toggleButtons() {
-    this.startBtnTarget.classList.toggle("hidden", this.isRunning)
+    this.startBtnTarget.classList.toggle("hidden", this.isRunning || this.isCompleted)
     this.pauseBtnTarget.classList.toggle("hidden", !this.isRunning)
   }
 
