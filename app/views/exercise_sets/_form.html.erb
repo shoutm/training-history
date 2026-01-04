@@ -19,6 +19,11 @@
     <%= f.number_field :rounds, min: 1, max: 10, class: "w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
   </div>
 
+  <div class="flex items-center gap-2">
+    <%= f.check_box :default, class: "w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500" %>
+    <%= f.label :default, "Set as default preset", class: "text-sm text-gray-700" %>
+  </div>
+
   <div class="border-t pt-4">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-lg font-semibold text-gray-700">Exercises</h3>

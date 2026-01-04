@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_04_030209) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_04_053738) do
   create_table "exercise_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_seconds", default: 30
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_04_030209) do
 
   create_table "exercise_sets", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.boolean "default", default: false, null: false
     t.string "name"
     t.integer "rounds", default: 1
     t.datetime "updated_at", null: false

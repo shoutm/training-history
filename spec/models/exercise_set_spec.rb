@@ -60,4 +60,50 @@ RSpec.describe ExerciseSet, type: :model do
       expect(exercise_set.exercise_items.count).to eq 2
     end
   end
+
+  describe "default functionality" do
+    it "defaults to false" do
+      exercise_set = ExerciseSet.create!(user: user, name: "Test", rounds: 1)
+      expect(exercise_set.default).to be false
+    end
+
+    it "can be set as default" do
+      exercise_set = ExerciseSet.create!(user: user, name: "Test", rounds: 1)
+      exercise_set.set_as_default!
+      expect(exercise_set.reload.default).to be true
+    end
+
+    it "clears other defaults when setting a new default" do
+      set1 = ExerciseSet.create!(user: user, name: "Set 1", rounds: 1, default: true)
+      set2 = ExerciseSet.create!(user: user, name: "Set 2", rounds: 1)
+
+      set2.set_as_default!
+
+      expect(set1.reload.default).to be false
+      expect(set2.reload.default).to be true
+    end
+
+    it "only allows one default per user" do
+      set1 = ExerciseSet.create!(user: user, name: "Set 1", rounds: 1, default: true)
+      set2 = ExerciseSet.create!(user: user, name: "Set 2", rounds: 1, default: true)
+
+      expect(set1.reload.default).to be false
+      expect(set2.default).to be true
+    end
+
+    describe ".default_set" do
+      it "returns the default set" do
+        ExerciseSet.create!(user: user, name: "Set 1", rounds: 1)
+        default_set = ExerciseSet.create!(user: user, name: "Set 2", rounds: 1, default: true)
+
+        expect(user.exercise_sets.default_set).to eq default_set
+      end
+
+      it "returns nil when no default exists" do
+        ExerciseSet.create!(user: user, name: "Set 1", rounds: 1)
+
+        expect(user.exercise_sets.default_set).to be_nil
+      end
+    end
+  end
 end

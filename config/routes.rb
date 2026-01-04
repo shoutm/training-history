@@ -16,7 +16,11 @@ Rails.application.routes.draw do
   get "timer", to: "timer#show", as: :timer
   get "timer/:exercise_set_id", to: "timer#show", as: :timer_with_set
 
-  resources :exercise_sets, except: :show
+  resources :exercise_sets, except: :show do
+    member do
+      post :set_default
+    end
+  end
 
   # Authentication
   get "login", to: "sessions#new", as: :login

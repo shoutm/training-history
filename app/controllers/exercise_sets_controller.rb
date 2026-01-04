@@ -1,5 +1,5 @@
 class ExerciseSetsController < ApplicationController
-  before_action :set_exercise_set, only: [ :edit, :update, :destroy ]
+  before_action :set_exercise_set, only: [ :edit, :update, :destroy, :set_default ]
 
   def index
     @exercise_sets = current_user.exercise_sets.includes(:exercise_items)
@@ -35,6 +35,11 @@ class ExerciseSetsController < ApplicationController
     redirect_to exercise_sets_path, notice: "プリセットを削除しました"
   end
 
+  def set_default
+    @exercise_set.set_as_default!
+    redirect_to exercise_sets_path, notice: "「#{@exercise_set.name}」をデフォルトに設定しました"
+  end
+
   private
 
   def set_exercise_set
@@ -43,7 +48,7 @@ class ExerciseSetsController < ApplicationController
 
   def exercise_set_params
     params.require(:exercise_set).permit(
-      :name, :rounds,
+      :name, :rounds, :default,
       exercise_items_attributes: [ :id, :name, :exercise_seconds, :rest_seconds, :position, :_destroy ]
     )
   end

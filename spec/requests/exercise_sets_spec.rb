@@ -116,6 +116,25 @@ RSpec.describe "ExerciseSets", type: :request do
     end
   end
 
+  describe "POST /exercise_sets/:id/set_default" do
+    it "sets the exercise set as default" do
+      post set_default_exercise_set_path(exercise_set)
+      expect(exercise_set.reload.default).to be true
+    end
+
+    it "redirects to index" do
+      post set_default_exercise_set_path(exercise_set)
+      expect(response).to redirect_to(exercise_sets_path)
+    end
+
+    it "clears other defaults" do
+      other_set = user.exercise_sets.create!(name: "Other", rounds: 1, default: true)
+      post set_default_exercise_set_path(exercise_set)
+      expect(other_set.reload.default).to be false
+      expect(exercise_set.reload.default).to be true
+    end
+  end
+
   describe "accessing other user's exercise sets" do
     let(:other_user) { User.create!(provider: 'google_oauth2', uid: '456', name: 'Other', email: 'other@example.com') }
     let(:other_set) { other_user.exercise_sets.create!(name: "Other's Set", rounds: 1) }
@@ -132,6 +151,11 @@ RSpec.describe "ExerciseSets", type: :request do
 
     it "returns not found for delete" do
       delete exercise_set_path(other_set)
+      expect(response).to have_http_status(:not_found)
+    end
+
+    it "returns not found for set_default" do
+      post set_default_exercise_set_path(other_set)
       expect(response).to have_http_status(:not_found)
     end
   end
