@@ -11,7 +11,18 @@ export default class extends Controller {
   }
 
   connect() {
+    this.audioContext = null
     this.reset()
+  }
+
+  initAudioContext() {
+    if (!this.audioContext) {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    }
+    // Safari requires resume after user interaction
+    if (this.audioContext.state === "suspended") {
+      this.audioContext.resume()
+    }
   }
 
   reset() {
@@ -39,6 +50,7 @@ export default class extends Controller {
 
   start() {
     if (this.isRunning || this.isCompleted) return
+    this.initAudioContext()
     this.isRunning = true
     this.toggleButtons()
     this.timer = setInterval(() => this.tick(), 1000)
@@ -164,23 +176,24 @@ export default class extends Controller {
 
   playTone(frequency, duration) {
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
+      if (!this.audioContext) return
+
+      const oscillator = this.audioContext.createOscillator()
+      const gainNode = this.audioContext.createGain()
 
       oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
+      gainNode.connect(this.audioContext.destination)
 
       oscillator.frequency.value = frequency
       oscillator.type = "sine"
 
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration)
+      gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration)
 
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + duration)
+      oscillator.start(this.audioContext.currentTime)
+      oscillator.stop(this.audioContext.currentTime + duration)
     } catch (e) {
-      console.log("Audio not supported")
+      console.log("Audio not supported:", e)
     }
   }
 }
