@@ -14,6 +14,9 @@ Rails.application.routes.draw do
 
   post "toggle/:date", to: "workout_logs#toggle", as: :toggle_workout
   get "timer", to: "timer#show", as: :timer
+  get "timer/:exercise_set_id", to: "timer#show", as: :timer_with_set
+
+  resources :exercise_sets, except: :show
 
   # Authentication
   get "login", to: "sessions#new", as: :login

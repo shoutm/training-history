@@ -1,0 +1,47 @@
+<%= form_with model: exercise_set, class: "space-y-6", data: { controller: "nested-form" } do |f| %>
+  <% if exercise_set.errors.any? %>
+    <div class="p-4 bg-red-100 text-red-700 rounded-lg">
+      <ul class="list-disc list-inside">
+        <% exercise_set.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "Preset Name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500", placeholder: "e.g. Morning Routine" %>
+  </div>
+
+  <div>
+    <%= f.label :rounds, "Rounds", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.number_field :rounds, min: 1, max: 10, class: "w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" %>
+  </div>
+
+  <div class="border-t pt-4">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-700">Exercises</h3>
+      <button type="button" data-action="nested-form#add" class="px-3 py-1 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600">
+        + Add Exercise
+      </button>
+    </div>
+
+    <div data-nested-form-target="container" class="space-y-4">
+      <%= f.fields_for :exercise_items do |item_form| %>
+        <%= render "exercise_item_fields", f: item_form %>
+      <% end %>
+    </div>
+
+    <template data-nested-form-target="template">
+      <%= f.fields_for :exercise_items, ExerciseItem.new, child_index: "NEW_RECORD" do |item_form| %>
+        <%= render "exercise_item_fields", f: item_form %>
+      <% end %>
+    </template>
+  </div>
+
+  <div class="flex gap-4 pt-4">
+    <%= f.submit "Save Preset", class: "flex-1 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 cursor-pointer" %>
+    <%= link_to "Cancel", exercise_sets_path, class: "flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 text-center" %>
+  </div>
+<% end %>

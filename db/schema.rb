@@ -10,7 +10,27 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_03_151400) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_04_030209) do
+  create_table "exercise_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "exercise_seconds", default: 30
+    t.integer "exercise_set_id", null: false
+    t.string "name"
+    t.integer "position"
+    t.integer "rest_seconds", default: 15
+    t.datetime "updated_at", null: false
+    t.index ["exercise_set_id"], name: "index_exercise_items_on_exercise_set_id"
+  end
+
+  create_table "exercise_sets", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.integer "rounds", default: 1
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id"], name: "index_exercise_sets_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "avatar_url"
     t.datetime "created_at", null: false
@@ -33,5 +53,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_03_151400) do
     t.index ["user_id"], name: "index_workout_logs_on_user_id"
   end
 
+  add_foreign_key "exercise_items", "exercise_sets"
+  add_foreign_key "exercise_sets", "users"
   add_foreign_key "workout_logs", "users"
 end

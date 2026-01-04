@@ -1,88 +1,208 @@
-<div class="max-w-md mx-auto p-4" data-controller="timer"
-     data-timer-exercise-seconds-value="30"
-     data-timer-rest-seconds-value="15"
-     data-timer-total-sets-value="5">
+<% if @exercise_set %>
+  <%
+    exercises_data = @exercise_set.exercise_items.map do |item|
+      { name: item.name, exerciseSeconds: item.exercise_seconds, restSeconds: item.rest_seconds }
+    end
+  %>
+  <div class="max-w-md mx-auto p-4" data-controller="timer"
+       data-timer-exercises-value="<%= exercises_data.to_json %>"
+       data-timer-rounds-value="<%= @exercise_set.rounds %>">
 
-  <!-- Header -->
-  <div class="flex items-center mb-6">
-    <%= link_to root_path, class: "p-2 hover:bg-gray-100 rounded" do %>
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-      </svg>
+    <!-- Header -->
+    <div class="flex items-center mb-6">
+      <%= link_to exercise_sets_path, class: "p-2 hover:bg-gray-100 rounded" do %>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      <% end %>
+      <h1 class="text-xl font-bold flex-1 text-center mr-8"><%= @exercise_set.name %></h1>
+    </div>
+
+    <!-- Timer Display -->
+    <div class="bg-gray-100 rounded-2xl p-8 mb-6">
+      <!-- Exercise name -->
+      <div class="text-center mb-2">
+        <span data-timer-target="exerciseName" class="text-lg font-semibold text-gray-700">
+          <%= @exercise_set.exercise_items.first&.name %>
+        </span>
+      </div>
+
+      <!-- Phase indicator -->
+      <div class="text-center mb-4">
+        <span data-timer-target="phase" class="inline-block px-4 py-1 rounded-full text-white font-semibold bg-green-500">
+          Exercise
+        </span>
+      </div>
+
+      <!-- Time display -->
+      <div class="text-center">
+        <span data-timer-target="display" class="text-7xl font-mono font-bold text-gray-800">
+          00:<%= "%02d" % (@exercise_set.exercise_items.first&.exercise_seconds || 30) %>
+        </span>
+      </div>
+
+      <!-- Round/Exercise info -->
+      <div class="text-center mt-4">
+        <span data-timer-target="roundInfo" class="text-xl text-gray-600">
+          Round 1 / <%= @exercise_set.rounds %>
+        </span>
+        <span class="text-gray-400 mx-2">|</span>
+        <span data-timer-target="exerciseInfo" class="text-xl text-gray-600">
+          1 / <%= @exercise_set.exercise_items.size %>
+        </span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mt-6 h-2 bg-gray-300 rounded-full overflow-hidden">
+        <div data-timer-target="progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button data-timer-target="startBtn" data-action="click->timer#start"
+              class="px-8 py-4 bg-green-500 text-white font-bold text-lg rounded-xl hover:bg-green-600 transition-colors">
+        Start
+      </button>
+      <button data-timer-target="pauseBtn" data-action="click->timer#pause"
+              class="hidden px-8 py-4 bg-yellow-500 text-white font-bold text-lg rounded-xl hover:bg-yellow-600 transition-colors">
+        Pause
+      </button>
+      <button data-timer-target="resetBtn" data-action="click->timer#reset"
+              class="px-8 py-4 bg-gray-500 text-white font-bold text-lg rounded-xl hover:bg-gray-600 transition-colors">
+        Reset
+      </button>
+    </div>
+
+    <!-- Exercise List -->
+    <div class="bg-gray-50 rounded-xl p-4">
+      <h2 class="text-lg font-semibold mb-3 text-gray-700">Exercises</h2>
+      <div class="space-y-2">
+        <% @exercise_set.exercise_items.each_with_index do |item, index| %>
+          <div data-timer-target="exerciseListItem" data-index="<%= index %>"
+               class="flex justify-between items-center p-2 rounded <%= index == 0 ? 'bg-blue-100' : 'bg-white' %>">
+            <span class="font-medium"><%= item.name %></span>
+            <span class="text-sm text-gray-500"><%= item.exercise_seconds %>s / <%= item.rest_seconds %>s rest</span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="max-w-md mx-auto p-4" data-controller="timer"
+       data-timer-exercise-seconds-value="30"
+       data-timer-rest-seconds-value="15"
+       data-timer-total-sets-value="5">
+
+    <!-- Header -->
+    <div class="flex items-center mb-6">
+      <%= link_to root_path, class: "p-2 hover:bg-gray-100 rounded" do %>
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+      <% end %>
+      <h1 class="text-2xl font-bold flex-1 text-center mr-8">Interval Timer</h1>
+    </div>
+
+    <!-- Preset Selection -->
+    <% if @exercise_sets.any? %>
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Select Preset</label>
+        <div class="flex gap-2">
+          <select onchange="if(this.value) window.location.href=this.value"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Custom (below)</option>
+            <% @exercise_sets.each do |es| %>
+              <option value="<%= timer_with_set_path(es) %>"><%= es.name %></option>
+            <% end %>
+          </select>
+          <%= link_to exercise_sets_path, class: "px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200" do %>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          <% end %>
+        </div>
+      </div>
     <% end %>
-    <h1 class="text-2xl font-bold flex-1 text-center mr-8">Interval Timer</h1>
-  </div>
 
-  <!-- Timer Display -->
-  <div class="bg-gray-100 rounded-2xl p-8 mb-6">
-    <!-- Phase indicator -->
-    <div class="text-center mb-4">
-      <span data-timer-target="phase" class="inline-block px-4 py-1 rounded-full text-white font-semibold bg-green-500">
-        Exercise
-      </span>
-    </div>
-
-    <!-- Time display -->
-    <div class="text-center">
-      <span data-timer-target="display" class="text-7xl font-mono font-bold text-gray-800">
-        00:30
-      </span>
-    </div>
-
-    <!-- Set info -->
-    <div class="text-center mt-4">
-      <span data-timer-target="setInfo" class="text-xl text-gray-600">
-        Set 1 / 5
-      </span>
-    </div>
-
-    <!-- Progress bar -->
-    <div class="mt-6 h-2 bg-gray-300 rounded-full overflow-hidden">
-      <div data-timer-target="progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
-    </div>
-  </div>
-
-  <!-- Controls -->
-  <div class="flex justify-center gap-4 mb-8">
-    <button data-timer-target="startBtn" data-action="click->timer#start"
-            class="px-8 py-4 bg-green-500 text-white font-bold text-lg rounded-xl hover:bg-green-600 transition-colors">
-      Start
-    </button>
-    <button data-timer-target="pauseBtn" data-action="click->timer#pause"
-            class="hidden px-8 py-4 bg-yellow-500 text-white font-bold text-lg rounded-xl hover:bg-yellow-600 transition-colors">
-      Pause
-    </button>
-    <button data-timer-target="resetBtn" data-action="click->timer#reset"
-            class="px-8 py-4 bg-gray-500 text-white font-bold text-lg rounded-xl hover:bg-gray-600 transition-colors">
-      Reset
-    </button>
-  </div>
-
-  <!-- Settings -->
-  <div class="bg-gray-50 rounded-xl p-6">
-    <h2 class="text-lg font-semibold mb-4 text-gray-700">Settings</h2>
-
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <label class="text-gray-600">Exercise (sec)</label>
-        <input type="number" value="30" min="5" max="300" step="5"
-               data-action="change->timer#updateExercise"
-               class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+    <!-- Timer Display -->
+    <div class="bg-gray-100 rounded-2xl p-8 mb-6">
+      <!-- Phase indicator -->
+      <div class="text-center mb-4">
+        <span data-timer-target="phase" class="inline-block px-4 py-1 rounded-full text-white font-semibold bg-green-500">
+          Exercise
+        </span>
       </div>
 
-      <div class="flex items-center justify-between">
-        <label class="text-gray-600">Rest (sec)</label>
-        <input type="number" value="15" min="5" max="120" step="5"
-               data-action="change->timer#updateRest"
-               class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      <!-- Time display -->
+      <div class="text-center">
+        <span data-timer-target="display" class="text-7xl font-mono font-bold text-gray-800">
+          00:30
+        </span>
       </div>
 
-      <div class="flex items-center justify-between">
-        <label class="text-gray-600">Sets</label>
-        <input type="number" value="5" min="1" max="20"
-               data-action="change->timer#updateSets"
-               class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      <!-- Set info -->
+      <div class="text-center mt-4">
+        <span data-timer-target="setInfo" class="text-xl text-gray-600">
+          Set 1 / 5
+        </span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mt-6 h-2 bg-gray-300 rounded-full overflow-hidden">
+        <div data-timer-target="progress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
       </div>
     </div>
+
+    <!-- Controls -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button data-timer-target="startBtn" data-action="click->timer#start"
+              class="px-8 py-4 bg-green-500 text-white font-bold text-lg rounded-xl hover:bg-green-600 transition-colors">
+        Start
+      </button>
+      <button data-timer-target="pauseBtn" data-action="click->timer#pause"
+              class="hidden px-8 py-4 bg-yellow-500 text-white font-bold text-lg rounded-xl hover:bg-yellow-600 transition-colors">
+        Pause
+      </button>
+      <button data-timer-target="resetBtn" data-action="click->timer#reset"
+              class="px-8 py-4 bg-gray-500 text-white font-bold text-lg rounded-xl hover:bg-gray-600 transition-colors">
+        Reset
+      </button>
+    </div>
+
+    <!-- Settings -->
+    <div class="bg-gray-50 rounded-xl p-6">
+      <h2 class="text-lg font-semibold mb-4 text-gray-700">Settings</h2>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <label class="text-gray-600">Exercise (sec)</label>
+          <input type="number" value="30" min="5" max="300" step="5"
+                 data-action="change->timer#updateExercise"
+                 class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="flex items-center justify-between">
+          <label class="text-gray-600">Rest (sec)</label>
+          <input type="number" value="15" min="5" max="120" step="5"
+                 data-action="change->timer#updateRest"
+                 class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <div class="flex items-center justify-between">
+          <label class="text-gray-600">Sets</label>
+          <input type="number" value="5" min="1" max="20"
+                 data-action="change->timer#updateSets"
+                 class="w-24 px-3 py-2 border border-gray-300 rounded-lg text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+      </div>
+    </div>
+
+    <% if @exercise_sets.empty? %>
+      <div class="mt-6 text-center">
+        <%= link_to "Create a preset", new_exercise_set_path, class: "text-blue-500 hover:underline" %>
+      </div>
+    <% end %>
   </div>
-</div>
+<% end %>

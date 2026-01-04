@@ -9,3 +9,6 @@ application.register("hello", HelloController)
 
 import TimerController from "./timer_controller"
 application.register("timer", TimerController)
+
+import NestedFormController from "./nested_form_controller"
+application.register("nested-form", NestedFormController)
