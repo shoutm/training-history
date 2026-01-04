@@ -2,37 +2,27 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = [
-    "display", "phase", "setInfo", "roundInfo", "exerciseInfo", "exerciseName",
+    "display", "phase", "roundInfo", "exerciseInfo", "exerciseName",
     "progress", "startBtn", "pauseBtn", "resetBtn", "exerciseListItem"
   ]
   static values = {
-    exerciseSeconds: { type: Number, default: 30 },
-    restSeconds: { type: Number, default: 15 },
-    totalSets: { type: Number, default: 5 },
     exercises: { type: Array, default: [] },
     rounds: { type: Number, default: 1 }
   }
 
   connect() {
-    this.isPresetMode = this.exercisesValue.length > 0
     this.reset()
   }
 
   reset() {
     this.currentRound = 1
     this.currentExerciseIndex = 0
-    this.currentSet = 1
     this.isExercise = true
     this.isRunning = false
-    this.isPaused = false
     this.isCompleted = false
     clearInterval(this.timer)
 
-    if (this.isPresetMode) {
-      this.remainingSeconds = this.currentExercise.exerciseSeconds
-    } else {
-      this.remainingSeconds = this.exerciseSecondsValue
-    }
+    this.remainingSeconds = this.currentExercise.exerciseSeconds
 
     this.updateDisplay()
     this.toggleButtons()
@@ -50,7 +40,6 @@ export default class extends Controller {
   start() {
     if (this.isRunning || this.isCompleted) return
     this.isRunning = true
-    this.isPaused = false
     this.toggleButtons()
     this.timer = setInterval(() => this.tick(), 1000)
   }
@@ -58,7 +47,6 @@ export default class extends Controller {
   pause() {
     if (!this.isRunning) return
     this.isRunning = false
-    this.isPaused = true
     clearInterval(this.timer)
     this.toggleButtons()
   }
@@ -76,33 +64,6 @@ export default class extends Controller {
   }
 
   nextPhase() {
-    if (this.isPresetMode) {
-      this.nextPhasePreset()
-    } else {
-      this.nextPhaseSimple()
-    }
-    if (!this.isCompleted) {
-      this.updateDisplay()
-      this.updateExerciseListHighlight()
-    }
-  }
-
-  nextPhaseSimple() {
-    if (this.isExercise) {
-      this.isExercise = false
-      this.remainingSeconds = this.restSecondsValue
-    } else {
-      if (this.currentSet >= this.totalSetsValue) {
-        this.complete()
-        return
-      }
-      this.currentSet++
-      this.isExercise = true
-      this.remainingSeconds = this.exerciseSecondsValue
-    }
-  }
-
-  nextPhasePreset() {
     if (this.isExercise) {
       // After exercise, go to rest
       this.isExercise = false
@@ -127,6 +88,9 @@ export default class extends Controller {
         this.remainingSeconds = this.currentExercise.exerciseSeconds
       }
     }
+
+    this.updateDisplay()
+    this.updateExerciseListHighlight()
   }
 
   complete() {
@@ -150,29 +114,19 @@ export default class extends Controller {
     this.phaseTarget.classList.toggle("bg-green-500", this.isExercise)
     this.phaseTarget.classList.toggle("bg-yellow-500", !this.isExercise)
 
-    if (this.isPresetMode) {
-      if (this.hasExerciseNameTarget) {
-        this.exerciseNameTarget.textContent = this.currentExercise.name
-      }
-      if (this.hasRoundInfoTarget) {
-        this.roundInfoTarget.textContent = `Round ${this.currentRound} / ${this.roundsValue}`
-      }
-      if (this.hasExerciseInfoTarget) {
-        this.exerciseInfoTarget.textContent = `${this.currentExerciseIndex + 1} / ${this.totalExercises}`
-      }
-
-      const totalPhaseSeconds = this.isExercise ? this.currentExercise.exerciseSeconds : this.currentExercise.restSeconds
-      const progress = ((totalPhaseSeconds - this.remainingSeconds) / totalPhaseSeconds) * 100
-      this.progressTarget.style.width = `${progress}%`
-    } else {
-      if (this.hasSetInfoTarget) {
-        this.setInfoTarget.textContent = `Set ${this.currentSet} / ${this.totalSetsValue}`
-      }
-
-      const totalPhaseSeconds = this.isExercise ? this.exerciseSecondsValue : this.restSecondsValue
-      const progress = ((totalPhaseSeconds - this.remainingSeconds) / totalPhaseSeconds) * 100
-      this.progressTarget.style.width = `${progress}%`
+    if (this.hasExerciseNameTarget) {
+      this.exerciseNameTarget.textContent = this.currentExercise.name
     }
+    if (this.hasRoundInfoTarget) {
+      this.roundInfoTarget.textContent = `Round ${this.currentRound} / ${this.roundsValue}`
+    }
+    if (this.hasExerciseInfoTarget) {
+      this.exerciseInfoTarget.textContent = `${this.currentExerciseIndex + 1} / ${this.totalExercises}`
+    }
+
+    const totalPhaseSeconds = this.isExercise ? this.currentExercise.exerciseSeconds : this.currentExercise.restSeconds
+    const progress = ((totalPhaseSeconds - this.remainingSeconds) / totalPhaseSeconds) * 100
+    this.progressTarget.style.width = `${progress}%`
   }
 
   updateExerciseListHighlight() {
@@ -228,26 +182,5 @@ export default class extends Controller {
     } catch (e) {
       console.log("Audio not supported")
     }
-  }
-
-  updateExercise(event) {
-    this.exerciseSecondsValue = parseInt(event.target.value)
-    if (!this.isRunning && this.isExercise) {
-      this.remainingSeconds = this.exerciseSecondsValue
-      this.updateDisplay()
-    }
-  }
-
-  updateRest(event) {
-    this.restSecondsValue = parseInt(event.target.value)
-    if (!this.isRunning && !this.isExercise) {
-      this.remainingSeconds = this.restSecondsValue
-      this.updateDisplay()
-    }
-  }
-
-  updateSets(event) {
-    this.totalSetsValue = parseInt(event.target.value)
-    this.updateDisplay()
   }
 }
