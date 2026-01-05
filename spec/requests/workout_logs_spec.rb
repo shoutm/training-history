@@ -52,9 +52,9 @@ RSpec.describe "WorkoutLogs", type: :request do
         }.to change(user.workout_logs, :count).by(1)
       end
 
-      it "redirects to the calendar" do
+      it "redirects to the calendar with highlight" do
         post toggle_workout_path(date: "2026-01-15")
-        expect(response).to redirect_to(root_path(month: "2026-01-01"))
+        expect(response).to redirect_to(root_path(month: "2026-01-01", highlight: "2026-01-15"))
       end
     end
 

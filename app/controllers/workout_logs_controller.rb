@@ -12,10 +12,10 @@ class WorkoutLogsController < ApplicationController
 
     if workout_log
       workout_log.destroy
+      redirect_to root_path(month: date.beginning_of_month.to_s)
     else
       current_user.workout_logs.create!(date: date)
+      redirect_to root_path(month: date.beginning_of_month.to_s, highlight: date.to_s)
     end
-
-    redirect_to root_path(month: date.beginning_of_month.to_s)
   end
 end

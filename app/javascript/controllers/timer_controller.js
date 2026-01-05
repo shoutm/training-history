@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "display", "phase", "roundInfo", "exerciseInfo", "exerciseName",
-    "progress", "startBtn", "pauseBtn", "resetBtn", "exerciseListItem"
+    "progress", "startBtn", "pauseBtn", "resetBtn", "completeForm", "exerciseListItem"
   ]
   static values = {
     exercises: { type: Array, default: [] },
@@ -187,6 +187,8 @@ export default class extends Controller {
   toggleButtons() {
     this.startBtnTarget.classList.toggle("hidden", this.isRunning || this.isCompleted)
     this.pauseBtnTarget.classList.toggle("hidden", !this.isRunning)
+    this.resetBtnTarget.classList.toggle("hidden", this.isCompleted)
+    this.completeFormTarget.classList.toggle("hidden", !this.isCompleted)
   }
 
   playBeep() {
