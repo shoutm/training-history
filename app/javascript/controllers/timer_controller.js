@@ -12,7 +12,32 @@ export default class extends Controller {
 
   connect() {
     this.audioContext = null
+    this.wakeLock = null
     this.reset()
+
+    // Re-acquire wake lock when page becomes visible again
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && this.isRunning) {
+        this.requestWakeLock()
+      }
+    })
+  }
+
+  async requestWakeLock() {
+    try {
+      if ("wakeLock" in navigator) {
+        this.wakeLock = await navigator.wakeLock.request("screen")
+      }
+    } catch (e) {
+      console.log("Wake Lock not supported:", e)
+    }
+  }
+
+  async releaseWakeLock() {
+    if (this.wakeLock) {
+      await this.wakeLock.release()
+      this.wakeLock = null
+    }
   }
 
   initAudioContext() {
@@ -32,6 +57,7 @@ export default class extends Controller {
     this.isRunning = false
     this.isCompleted = false
     clearInterval(this.timer)
+    this.releaseWakeLock()
 
     this.remainingSeconds = this.currentExercise.exerciseSeconds
 
@@ -51,6 +77,7 @@ export default class extends Controller {
   start() {
     if (this.isRunning || this.isCompleted) return
     this.initAudioContext()
+    this.requestWakeLock()
     this.isRunning = true
     this.toggleButtons()
     this.timer = setInterval(() => this.tick(), 1000)
@@ -60,6 +87,7 @@ export default class extends Controller {
     if (!this.isRunning) return
     this.isRunning = false
     clearInterval(this.timer)
+    this.releaseWakeLock()
     this.toggleButtons()
   }
 
@@ -109,6 +137,7 @@ export default class extends Controller {
     clearInterval(this.timer)
     this.isRunning = false
     this.isCompleted = true
+    this.releaseWakeLock()
     this.phaseTarget.textContent = "Complete!"
     this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500")
     this.phaseTarget.classList.add("bg-blue-500")
