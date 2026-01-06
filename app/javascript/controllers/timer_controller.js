@@ -74,6 +74,19 @@ export default class extends Controller {
     return this.exercisesValue.length
   }
 
+  get nextExerciseName() {
+    // If not the last exercise, return the next exercise name
+    if (this.currentExerciseIndex < this.totalExercises - 1) {
+      return this.exercisesValue[this.currentExerciseIndex + 1].name
+    }
+    // If last exercise but not last round, return the first exercise name
+    if (this.currentRound < this.roundsValue) {
+      return this.exercisesValue[0].name
+    }
+    // Last exercise of last round
+    return null
+  }
+
   start() {
     if (this.isRunning || this.isCompleted) return
     this.initAudioContext()
@@ -156,7 +169,12 @@ export default class extends Controller {
     this.phaseTarget.classList.toggle("bg-yellow-500", !this.isExercise)
 
     if (this.hasExerciseNameTarget) {
-      this.exerciseNameTarget.textContent = this.currentExercise.name
+      if (this.isExercise) {
+        this.exerciseNameTarget.textContent = this.currentExercise.name
+      } else {
+        const nextName = this.nextExerciseName
+        this.exerciseNameTarget.textContent = nextName ? `休憩: 次は${nextName}` : "休憩: お疲れ様でした"
+      }
     }
     if (this.hasRoundInfoTarget) {
       this.roundInfoTarget.textContent = `Round ${this.currentRound} / ${this.roundsValue}`
