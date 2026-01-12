@@ -4,8 +4,17 @@
 
 import { application } from "./application"
 
-import TimerController from "./timer_controller"
-application.register("timer", TimerController)
+import FormController from "./form_controller"
+application.register("form", FormController)
 
 import NestedFormController from "./nested_form_controller"
 application.register("nested-form", NestedFormController)
+
+import NotificationSettingController from "./notification_setting_controller"
+application.register("notification-setting", NotificationSettingController)
+
+import PushNotificationController from "./push_notification_controller"
+application.register("push-notification", PushNotificationController)
+
+import TimerController from "./timer_controller"
+application.register("timer", TimerController)

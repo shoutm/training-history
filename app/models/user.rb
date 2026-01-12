@@ -1,6 +1,8 @@
 class User < ApplicationRecord
   has_many :workout_logs, dependent: :destroy
   has_many :exercise_sets, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
+  has_many :notification_settings, dependent: :destroy
 
   validates :provider, presence: true
   validates :uid, presence: true, uniqueness: { scope: :provider }

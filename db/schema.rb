@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_04_053738) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_12_034319) do
   create_table "exercise_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_seconds", default: 30
@@ -30,6 +30,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_04_053738) do
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
     t.index ["user_id"], name: "index_exercise_sets_on_user_id"
+  end
+
+  create_table "notification_settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "day_of_week", null: false
+    t.boolean "enabled", default: false, null: false
+    t.time "notify_at_utc"
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["user_id", "day_of_week"], name: "index_notification_settings_on_user_id_and_day_of_week", unique: true
+    t.index ["user_id"], name: "index_notification_settings_on_user_id"
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.string "auth", null: false
+    t.datetime "created_at", null: false
+    t.string "endpoint", null: false
+    t.string "p256dh", null: false
+    t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -56,5 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_04_053738) do
 
   add_foreign_key "exercise_items", "exercise_sets"
   add_foreign_key "exercise_sets", "users"
+  add_foreign_key "notification_settings", "users"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "workout_logs", "users"
 end
