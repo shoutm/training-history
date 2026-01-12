@@ -6,27 +6,24 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
 
   # Load Solid Cache/Queue/Cable schemas if their tables don't exist
   # All use the same DATABASE_URL, so we check before loading to avoid destroying data
-  ./bin/rails runner "
-    conn = ActiveRecord::Base.connection
 
-    unless conn.table_exists?('solid_cache_entries')
-      puts 'Creating Solid Cache tables...'
-      ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1'
-      Rake::Task['db:schema:load:cache'].invoke
-    end
+  # Check if solid_cache_entries table exists
+  if ! ./bin/rails runner "exit(ActiveRecord::Base.connection.table_exists?('solid_cache_entries') ? 0 : 1)"; then
+    echo "Creating Solid Cache tables..."
+    DISABLE_DATABASE_ENVIRONMENT_CHECK=1 ./bin/rails db:schema:load:cache
+  fi
 
-    unless conn.table_exists?('solid_queue_jobs')
-      puts 'Creating Solid Queue tables...'
-      ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1'
-      Rake::Task['db:schema:load:queue'].invoke
-    end
+  # Check if solid_queue_jobs table exists
+  if ! ./bin/rails runner "exit(ActiveRecord::Base.connection.table_exists?('solid_queue_jobs') ? 0 : 1)"; then
+    echo "Creating Solid Queue tables..."
+    DISABLE_DATABASE_ENVIRONMENT_CHECK=1 ./bin/rails db:schema:load:queue
+  fi
 
-    unless conn.table_exists?('solid_cable_messages')
-      puts 'Creating Solid Cable tables...'
-      ENV['DISABLE_DATABASE_ENVIRONMENT_CHECK'] = '1'
-      Rake::Task['db:schema:load:cable'].invoke
-    end
-  "
+  # Check if solid_cable_messages table exists
+  if ! ./bin/rails runner "exit(ActiveRecord::Base.connection.table_exists?('solid_cable_messages') ? 0 : 1)"; then
+    echo "Creating Solid Cable tables..."
+    DISABLE_DATABASE_ENVIRONMENT_CHECK=1 ./bin/rails db:schema:load:cable
+  fi
 fi
 
 exec "${@}"
