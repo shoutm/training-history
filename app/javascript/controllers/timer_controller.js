@@ -54,9 +54,8 @@ export default class extends Controller {
   reset() {
     this.currentRound = 1
     this.currentExerciseIndex = 0
-    this.phase = "ready" // "ready", "prep", "exercise", "rest"
+    this.phase = "ready" // "ready", "prep", "exercise", "rest", "complete"
     this.isRunning = false
-    this.isCompleted = false
     clearInterval(this.timer)
     this.releaseWakeLock()
 
@@ -73,6 +72,10 @@ export default class extends Controller {
 
   get totalExercises() {
     return this.exercisesValue.length
+  }
+
+  get isCompleted() {
+    return this.phase === "complete"
   }
 
   get nextExerciseName() {
@@ -167,15 +170,33 @@ export default class extends Controller {
   complete() {
     clearInterval(this.timer)
     this.isRunning = false
-    this.isCompleted = true
     this.phase = "complete"
     this.releaseWakeLock()
     this.phaseTarget.textContent = "Complete!"
-    this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500", "bg-purple-500")
+    const allColors = Object.values(this.phaseConfig).map(c => c.color)
+    this.phaseTarget.classList.remove(...allColors)
     this.phaseTarget.classList.add("bg-blue-500")
     this.displayTarget.textContent = "00:00"
     this.playComplete()
     this.toggleButtons()
+  }
+
+  get phaseConfig() {
+    return {
+      ready: { label: "Ready", color: "bg-blue-500" },
+      prep: { label: "Get Ready!", color: "bg-purple-500" },
+      exercise: { label: "Exercise", color: "bg-green-500" },
+      rest: { label: "Rest", color: "bg-yellow-500" }
+    }
+  }
+
+  get totalPhaseSeconds() {
+    switch (this.phase) {
+      case "prep": return this.prepSecondsValue
+      case "exercise": return this.currentExercise.exerciseSeconds
+      case "rest": return this.currentExercise.restSeconds
+      default: return this.currentExercise.exerciseSeconds
+    }
   }
 
   updateDisplay() {
@@ -184,18 +205,12 @@ export default class extends Controller {
     this.displayTarget.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 
     // Update phase label and colors
-    const phaseLabels = { ready: "Ready", prep: "Get Ready!", exercise: "Exercise", rest: "Rest" }
-    this.phaseTarget.textContent = phaseLabels[this.phase] || this.phase
-
-    this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500", "bg-blue-500", "bg-purple-500")
-    if (this.phase === "ready") {
-      this.phaseTarget.classList.add("bg-blue-500")
-    } else if (this.phase === "prep") {
-      this.phaseTarget.classList.add("bg-purple-500")
-    } else if (this.phase === "exercise") {
-      this.phaseTarget.classList.add("bg-green-500")
-    } else if (this.phase === "rest") {
-      this.phaseTarget.classList.add("bg-yellow-500")
+    const config = this.phaseConfig[this.phase]
+    if (config) {
+      this.phaseTarget.textContent = config.label
+      const allColors = Object.values(this.phaseConfig).map(c => c.color)
+      this.phaseTarget.classList.remove(...allColors)
+      this.phaseTarget.classList.add(config.color)
     }
 
     if (this.hasExerciseNameTarget) {
@@ -216,17 +231,7 @@ export default class extends Controller {
     }
 
     // Calculate progress
-    let totalPhaseSeconds
-    if (this.phase === "prep") {
-      totalPhaseSeconds = this.prepSecondsValue
-    } else if (this.phase === "exercise") {
-      totalPhaseSeconds = this.currentExercise.exerciseSeconds
-    } else if (this.phase === "rest") {
-      totalPhaseSeconds = this.currentExercise.restSeconds
-    } else {
-      totalPhaseSeconds = this.currentExercise.exerciseSeconds
-    }
-    const progress = ((totalPhaseSeconds - this.remainingSeconds) / totalPhaseSeconds) * 100
+    const progress = ((this.totalPhaseSeconds - this.remainingSeconds) / this.totalPhaseSeconds) * 100
     this.progressTarget.style.width = `${progress}%`
   }
 
