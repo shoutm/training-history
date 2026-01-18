@@ -7,7 +7,8 @@ export default class extends Controller {
   ]
   static values = {
     exercises: { type: Array, default: [] },
-    rounds: { type: Number, default: 1 }
+    rounds: { type: Number, default: 1 },
+    prepSeconds: { type: Number, default: 5 }
   }
 
   connect() {
@@ -53,7 +54,7 @@ export default class extends Controller {
   reset() {
     this.currentRound = 1
     this.currentExerciseIndex = 0
-    this.isExercise = true
+    this.phase = "ready" // "ready", "prep", "exercise", "rest"
     this.isRunning = false
     this.isCompleted = false
     clearInterval(this.timer)
@@ -92,6 +93,14 @@ export default class extends Controller {
     this.initAudioContext()
     this.requestWakeLock()
     this.isRunning = true
+
+    // Start with preparation phase if not already started
+    if (this.phase === "ready") {
+      this.phase = "prep"
+      this.remainingSeconds = this.prepSecondsValue
+      this.updateDisplay()
+    }
+
     this.toggleButtons()
     this.timer = setInterval(() => this.tick(), 1000)
   }
@@ -117,27 +126,36 @@ export default class extends Controller {
   }
 
   nextPhase() {
-    if (this.isExercise) {
+    if (this.phase === "prep") {
+      // After preparation, start first exercise
+      this.phase = "exercise"
+      this.remainingSeconds = this.currentExercise.exerciseSeconds
+    } else if (this.phase === "exercise") {
+      // Check if this is the last exercise of the last round
+      const isLastExercise = this.currentExerciseIndex >= this.totalExercises - 1
+      const isLastRound = this.currentRound >= this.roundsValue
+
+      if (isLastExercise && isLastRound) {
+        // Skip rest and complete immediately
+        this.complete()
+        return
+      }
+
       // After exercise, go to rest
-      this.isExercise = false
+      this.phase = "rest"
       this.remainingSeconds = this.currentExercise.restSeconds
-    } else {
+    } else if (this.phase === "rest") {
       // After rest, go to next exercise or next round
       if (this.currentExerciseIndex < this.totalExercises - 1) {
         // Move to next exercise
         this.currentExerciseIndex++
-        this.isExercise = true
+        this.phase = "exercise"
         this.remainingSeconds = this.currentExercise.exerciseSeconds
       } else {
-        // Finished all exercises in this round
-        if (this.currentRound >= this.roundsValue) {
-          this.complete()
-          return
-        }
-        // Start next round
+        // Finished all exercises in this round, start next round
         this.currentRound++
         this.currentExerciseIndex = 0
-        this.isExercise = true
+        this.phase = "exercise"
         this.remainingSeconds = this.currentExercise.exerciseSeconds
       }
     }
@@ -150,9 +168,10 @@ export default class extends Controller {
     clearInterval(this.timer)
     this.isRunning = false
     this.isCompleted = true
+    this.phase = "complete"
     this.releaseWakeLock()
     this.phaseTarget.textContent = "Complete!"
-    this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500")
+    this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500", "bg-purple-500")
     this.phaseTarget.classList.add("bg-blue-500")
     this.displayTarget.textContent = "00:00"
     this.playComplete()
@@ -164,16 +183,29 @@ export default class extends Controller {
     const secs = this.remainingSeconds % 60
     this.displayTarget.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 
-    this.phaseTarget.textContent = this.isExercise ? "Exercise" : "Rest"
-    this.phaseTarget.classList.toggle("bg-green-500", this.isExercise)
-    this.phaseTarget.classList.toggle("bg-yellow-500", !this.isExercise)
+    // Update phase label and colors
+    const phaseLabels = { ready: "Ready", prep: "Get Ready!", exercise: "Exercise", rest: "Rest" }
+    this.phaseTarget.textContent = phaseLabels[this.phase] || this.phase
+
+    this.phaseTarget.classList.remove("bg-green-500", "bg-yellow-500", "bg-blue-500", "bg-purple-500")
+    if (this.phase === "ready") {
+      this.phaseTarget.classList.add("bg-blue-500")
+    } else if (this.phase === "prep") {
+      this.phaseTarget.classList.add("bg-purple-500")
+    } else if (this.phase === "exercise") {
+      this.phaseTarget.classList.add("bg-green-500")
+    } else if (this.phase === "rest") {
+      this.phaseTarget.classList.add("bg-yellow-500")
+    }
 
     if (this.hasExerciseNameTarget) {
-      if (this.isExercise) {
+      if (this.phase === "ready" || this.phase === "prep") {
+        this.exerciseNameTarget.textContent = `最初: ${this.currentExercise.name}`
+      } else if (this.phase === "exercise") {
         this.exerciseNameTarget.textContent = this.currentExercise.name
       } else {
         const nextName = this.nextExerciseName
-        this.exerciseNameTarget.textContent = nextName ? `休憩: 次は${nextName}` : "休憩: お疲れ様でした"
+        this.exerciseNameTarget.textContent = nextName ? `次は ${nextName}` : "お疲れ様でした"
       }
     }
     if (this.hasRoundInfoTarget) {
@@ -183,7 +215,17 @@ export default class extends Controller {
       this.exerciseInfoTarget.textContent = `${this.currentExerciseIndex + 1} / ${this.totalExercises}`
     }
 
-    const totalPhaseSeconds = this.isExercise ? this.currentExercise.exerciseSeconds : this.currentExercise.restSeconds
+    // Calculate progress
+    let totalPhaseSeconds
+    if (this.phase === "prep") {
+      totalPhaseSeconds = this.prepSecondsValue
+    } else if (this.phase === "exercise") {
+      totalPhaseSeconds = this.currentExercise.exerciseSeconds
+    } else if (this.phase === "rest") {
+      totalPhaseSeconds = this.currentExercise.restSeconds
+    } else {
+      totalPhaseSeconds = this.currentExercise.exerciseSeconds
+    }
     const progress = ((totalPhaseSeconds - this.remainingSeconds) / totalPhaseSeconds) * 100
     this.progressTarget.style.width = `${progress}%`
   }
