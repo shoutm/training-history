@@ -26,7 +26,8 @@ RSpec.describe "WorkoutLogs", type: :request do
     it "shows workout logs for the month" do
       user.workout_logs.create!(date: Date.new(2026, 1, 15))
       get root_path(month: "2026-01-01")
-      expect(response.body).to include("①")
+      expect(response.body).to include("bg-green-600")
+      expect(response.body).to include("rounded-full")
     end
 
     it "displays the training count" do
@@ -40,7 +41,7 @@ RSpec.describe "WorkoutLogs", type: :request do
       other_user = User.create!(provider: 'google_oauth2', uid: '456', name: 'Other', email: 'other@example.com')
       other_user.workout_logs.create!(date: Date.new(2026, 1, 15))
       get root_path(month: "2026-01-01")
-      expect(response.body).not_to include("①")
+      expect(response.body).not_to include("absolute top-1 right-1")
     end
   end
 
