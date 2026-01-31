@@ -147,6 +147,14 @@ export default class extends Controller {
       // After exercise, go to rest
       this.phase = "rest"
       this.remainingSeconds = this.currentExercise.restSeconds
+
+      // Speak next exercise name
+      const nextName = this.nextExerciseName
+      if (nextName) {
+        this.speak(`次は ${nextName}`)
+      } else {
+        this.speak("お疲れ様でした")
+      }
     } else if (this.phase === "rest") {
       // After rest, go to next exercise or next round
       if (this.currentExerciseIndex < this.totalExercises - 1) {
@@ -290,6 +298,19 @@ export default class extends Controller {
       oscillator.stop(this.audioContext.currentTime + duration)
     } catch (e) {
       console.log("Audio not supported:", e)
+    }
+  }
+
+  speak(text) {
+    try {
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text)
+        utterance.lang = 'ja-JP'
+        utterance.rate = 1.0
+        speechSynthesis.speak(utterance)
+      }
+    } catch (e) {
+      console.log("Speech synthesis not supported:", e)
     }
   }
 }
