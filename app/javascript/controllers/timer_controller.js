@@ -149,12 +149,7 @@ export default class extends Controller {
       this.remainingSeconds = this.currentExercise.restSeconds
 
       // Speak next exercise name
-      const nextName = this.nextExerciseName
-      if (nextName) {
-        this.speak(`次は ${nextName}`)
-      } else {
-        this.speak("お疲れ様でした")
-      }
+      this.speak(`次は ${this.nextExerciseName}`)
     } else if (this.phase === "rest") {
       // After rest, go to next exercise or next round
       if (this.currentExerciseIndex < this.totalExercises - 1) {
@@ -186,6 +181,7 @@ export default class extends Controller {
     this.phaseTarget.classList.add("bg-blue-500")
     this.displayTarget.textContent = "00:00"
     this.playComplete()
+    this.speak("お疲れ様でした")
     this.toggleButtons()
   }
 
@@ -227,8 +223,7 @@ export default class extends Controller {
       } else if (this.phase === "exercise") {
         this.exerciseNameTarget.textContent = this.currentExercise.name
       } else {
-        const nextName = this.nextExerciseName
-        this.exerciseNameTarget.textContent = nextName ? `次は ${nextName}` : "お疲れ様でした"
+        this.exerciseNameTarget.textContent = `次は ${this.nextExerciseName}`
       }
     }
     if (this.hasRoundInfoTarget) {
