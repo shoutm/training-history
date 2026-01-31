@@ -26,43 +26,56 @@ RSpec.describe "Timer", type: :request do
       end
     end
 
-    context "with presets available but no default" do
+    context "with only one preset" do
       let!(:exercise_set) do
         set = user.exercise_sets.create!(name: "Morning Routine", rounds: 2)
         set.exercise_items.create!(name: "Push-ups", exercise_seconds: 30, rest_seconds: 15, position: 0)
         set
       end
 
-      it "displays the preset selection page" do
+      it "auto-loads the only preset and shows timer interface" do
         get timer_path
-        expect(response.body).to include("Select Preset")
         expect(response.body).to include("Morning Routine")
+        expect(response.body).to include('data-controller="timer"')
+        expect(response.body).to include("Start")
       end
 
-      it "shows preset details" do
+      it "does not show the selection page" do
         get timer_path
-        expect(response.body).to include("2 rounds")
-        expect(response.body).to include("1 exercise")
+        expect(response.body).not_to include("Select Workout")
       end
     end
 
-    context "with a default preset" do
-      let!(:exercise_set) do
+    context "with multiple presets" do
+      let!(:default_set) do
         set = user.exercise_sets.create!(name: "Default Routine", rounds: 3, default: true)
         set.exercise_items.create!(name: "Squats", exercise_seconds: 40, rest_seconds: 20, position: 0)
         set
       end
-
-      it "loads the default preset automatically" do
-        get timer_path
-        expect(response.body).to include("Default Routine")
-        expect(response.body).to include("Squats")
+      let!(:other_set) do
+        set = user.exercise_sets.create!(name: "Evening Routine", rounds: 2)
+        set.exercise_items.create!(name: "Plank", exercise_seconds: 30, rest_seconds: 15, position: 0)
+        set
       end
 
-      it "shows the timer interface" do
+      it "displays the preset selection page" do
         get timer_path
-        expect(response.body).to include('data-controller="timer"')
-        expect(response.body).to include("Start")
+        expect(response.body).to include("Select Workout")
+        expect(response.body).to include("Default Routine")
+        expect(response.body).to include("Evening Routine")
+      end
+
+      it "does not auto-load any preset" do
+        get timer_path
+        expect(response.body).not_to include('data-controller="timer"')
+        expect(response.body).not_to include("Start")
+      end
+
+      it "shows tile format with clickable links" do
+        get timer_path
+        expect(response.body).to include('href="/timer/')
+        expect(response.body).to include("3 rounds")
+        expect(response.body).to include("2 rounds")
       end
     end
 
