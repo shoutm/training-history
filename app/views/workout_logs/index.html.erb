@@ -42,7 +42,7 @@
       <% is_future = date > Date.current %>
       <% is_highlighted = date == highlight_date %>
 
-      <div class="w-full aspect-square flex flex-col items-center justify-center rounded-lg
+      <div class="relative w-full aspect-square flex flex-col items-center justify-center rounded-lg
                   <%= is_today ? 'ring-2 ring-blue-500' : '' %>
                   <%= entries_count > 0 ? 'bg-green-100' : 'bg-gray-50' %>
                   <%= is_future ? 'opacity-40' : '' %>
@@ -51,8 +51,8 @@
           <%= date.day %>
         </span>
         <% if entries_count > 0 %>
-          <span class="text-xs font-bold text-green-700">
-            <%= ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"][entries_count - 1] || "#{entries_count}" %>
+          <span class="absolute top-1 right-1 w-5 h-5 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+            <%= entries_count %>
           </span>
         <% end %>
       </div>
