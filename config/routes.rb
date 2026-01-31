@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   root "workout_logs#index"
 
-  post "toggle/:date", to: "workout_logs#toggle", as: :toggle_workout
+  post "workout_logs/record", to: "workout_logs#record", as: :record_workout
   get "timer", to: "timer#show", as: :timer
   get "timer/:exercise_set_id", to: "timer#show", as: :timer_with_set
 

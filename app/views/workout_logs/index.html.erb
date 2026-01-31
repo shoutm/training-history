@@ -28,7 +28,7 @@
   </div>
 
   <!-- Calendar grid -->
-  <div class="grid grid-cols-7 gap-1 [&>form]:w-full">
+  <div class="grid grid-cols-7 gap-1">
     <% # Empty cells for days before the first of the month %>
     <% @current_month.beginning_of_month.wday.times do %>
       <div class="aspect-square"></div>
@@ -36,33 +36,33 @@
 
     <% # Days of the month %>
     <% (@current_month.beginning_of_month..@current_month.end_of_month).each do |date| %>
-      <% completed = @workout_logs.include?(date) %>
+      <% workout_logs = @workout_logs_by_date[date] || [] %>
+      <% entries_count = workout_logs.size %>
       <% is_today = date == Date.current %>
       <% is_future = date > Date.current %>
       <% is_highlighted = date == highlight_date %>
 
-      <%= button_to toggle_workout_path(date: date.to_s),
-            method: :post,
-            disabled: is_future,
-            class: "w-full aspect-square flex flex-col items-center justify-center rounded-lg transition-all
-                    #{is_today ? 'ring-2 ring-blue-500' : ''}
-                    #{completed ? 'bg-green-100' : 'bg-gray-50'}
-                    #{is_future ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-200 cursor-pointer'}
-                    #{is_highlighted ? 'animate-highlight ring-4 ring-green-400' : ''}" do %>
+      <div class="w-full aspect-square flex flex-col items-center justify-center rounded-lg
+                  <%= is_today ? 'ring-2 ring-blue-500' : '' %>
+                  <%= entries_count > 0 ? 'bg-green-100' : 'bg-gray-50' %>
+                  <%= is_future ? 'opacity-40' : '' %>
+                  <%= is_highlighted ? 'animate-highlight ring-4 ring-green-400' : '' %>">
         <span class="text-sm <%= is_today ? 'font-bold text-blue-600' : 'text-gray-700' %>">
           <%= date.day %>
         </span>
-        <% if completed %>
-          <span class="text-lg">✅</span>
+        <% if entries_count > 0 %>
+          <span class="text-xs font-bold text-green-700">
+            <%= ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"][entries_count - 1] || "#{entries_count}" %>
+          </span>
         <% end %>
-      <% end %>
+      </div>
     <% end %>
   </div>
 
   <!-- Stats -->
   <div class="mt-6 p-4 bg-gray-50 rounded-lg">
     <div class="text-center">
-      <span class="text-3xl font-bold text-green-600"><%= @workout_logs.size %></span>
+      <span class="text-3xl font-bold text-green-600"><%= @workout_logs_by_date.keys.size %></span>
       <span class="text-gray-600"> / <%= @current_month.end_of_month.day %> 日</span>
     </div>
     <p class="text-center text-sm text-gray-500 mt-1">今月のトレーニング達成率</p>

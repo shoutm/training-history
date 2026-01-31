@@ -103,6 +103,24 @@ RSpec.describe "ExerciseSets", type: :request do
       delete exercise_set_path(exercise_set)
       expect(response).to redirect_to(exercise_sets_path)
     end
+
+    context "when exercise set is used in workout logs" do
+      before do
+        user.workout_logs.create!(date: Date.current, exercise_set: exercise_set)
+      end
+
+      it "does not delete the exercise set" do
+        expect {
+          delete exercise_set_path(exercise_set)
+        }.not_to change(ExerciseSet, :count)
+      end
+
+      it "redirects to index with an error message" do
+        delete exercise_set_path(exercise_set)
+        expect(response).to redirect_to(exercise_sets_path)
+        expect(flash[:alert]).to include("トレーニング履歴で使用されているため削除できません")
+      end
+    end
   end
 
   describe "without authentication" do

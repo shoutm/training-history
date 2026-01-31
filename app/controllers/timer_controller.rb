@@ -6,7 +6,5 @@ class TimerController < ApplicationController
     else
       @exercise_sets.default_set
     end
-
-    @today_completed = current_user.workout_logs.exists?(date: Date.current)
   end
 end

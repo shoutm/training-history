@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_12_034319) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_31_000118) do
   create_table "exercise_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "exercise_seconds", default: 30
@@ -70,9 +70,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_12_034319) do
     t.boolean "completed", default: true, null: false
     t.datetime "created_at", null: false
     t.date "date", null: false
+    t.integer "exercise_set_id"
     t.datetime "updated_at", null: false
     t.integer "user_id", null: false
-    t.index ["user_id", "date"], name: "index_workout_logs_on_user_id_and_date", unique: true
+    t.index ["exercise_set_id"], name: "index_workout_logs_on_exercise_set_id"
+    t.index ["user_id", "date", "exercise_set_id"], name: "index_workout_logs_on_user_id_and_date_and_exercise_set_id", unique: true
     t.index ["user_id"], name: "index_workout_logs_on_user_id"
   end
 
@@ -80,5 +82,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_12_034319) do
   add_foreign_key "exercise_sets", "users"
   add_foreign_key "notification_settings", "users"
   add_foreign_key "push_subscriptions", "users"
+  add_foreign_key "workout_logs", "exercise_sets"
   add_foreign_key "workout_logs", "users"
 end

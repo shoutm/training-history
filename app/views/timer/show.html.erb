@@ -86,16 +86,12 @@
               class="px-8 py-4 bg-gray-500 text-white font-bold text-lg rounded-xl hover:bg-gray-600 transition-colors">
         Reset
       </button>
-      <% if @today_completed %>
-        <%= link_to root_path, data: { timer_target: "completeForm" }, class: "hidden px-8 py-4 bg-blue-500 text-white font-bold text-lg rounded-xl hover:bg-blue-600 transition-colors" do %>
-          Return
-        <% end %>
-      <% else %>
-        <%= form_with url: toggle_workout_path(date: Date.current.to_s), method: :post, data: { timer_target: "completeForm" }, class: "hidden" do %>
-          <button type="submit" class="px-8 py-4 bg-blue-500 text-white font-bold text-lg rounded-xl hover:bg-blue-600 transition-colors">
-            Record & Return
-          </button>
-        <% end %>
+      <%= form_with url: record_workout_path, method: :post, data: { timer_target: "completeForm" }, class: "hidden" do %>
+        <%= hidden_field_tag :date, Date.current.to_s %>
+        <%= hidden_field_tag :exercise_set_id, @exercise_set.id %>
+        <button type="submit" class="px-8 py-4 bg-blue-500 text-white font-bold text-lg rounded-xl hover:bg-blue-600 transition-colors">
+          Record & Return
+        </button>
       <% end %>
     </div>
 

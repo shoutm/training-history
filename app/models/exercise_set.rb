@@ -1,6 +1,7 @@
 class ExerciseSet < ApplicationRecord
   belongs_to :user
   has_many :exercise_items, -> { order(:position) }, dependent: :destroy
+  has_many :workout_logs, dependent: :restrict_with_error
 
   validates :name, presence: true
   validates :rounds, presence: true, numericality: { greater_than: 0 }

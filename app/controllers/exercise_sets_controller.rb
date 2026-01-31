@@ -31,8 +31,11 @@ class ExerciseSetsController < ApplicationController
   end
 
   def destroy
-    @exercise_set.destroy
-    redirect_to exercise_sets_path, notice: "プリセットを削除しました"
+    if @exercise_set.destroy
+      redirect_to exercise_sets_path, notice: "プリセットを削除しました"
+    else
+      redirect_to exercise_sets_path, alert: "このプリセットはトレーニング履歴で使用されているため削除できません"
+    end
   end
 
   def set_default

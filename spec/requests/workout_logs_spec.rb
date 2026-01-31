@@ -26,7 +26,7 @@ RSpec.describe "WorkoutLogs", type: :request do
     it "shows workout logs for the month" do
       user.workout_logs.create!(date: Date.new(2026, 1, 15))
       get root_path(month: "2026-01-01")
-      expect(response.body).to include("✅")
+      expect(response.body).to include("①")
     end
 
     it "displays the training count" do
@@ -40,39 +40,28 @@ RSpec.describe "WorkoutLogs", type: :request do
       other_user = User.create!(provider: 'google_oauth2', uid: '456', name: 'Other', email: 'other@example.com')
       other_user.workout_logs.create!(date: Date.new(2026, 1, 15))
       get root_path(month: "2026-01-01")
-      expect(response.body).not_to include("✅")
+      expect(response.body).not_to include("①")
     end
   end
 
-  describe "POST /toggle/:date" do
-    context "when no workout log exists for the date" do
-      it "creates a new workout log" do
-        expect {
-          post toggle_workout_path(date: "2026-01-15")
-        }.to change(user.workout_logs, :count).by(1)
-      end
+  describe "POST /workout_logs/record" do
+    let(:exercise_set) { user.exercise_sets.create!(name: "Test Set", rounds: 3) }
 
-      it "redirects to the calendar with highlight" do
-        post toggle_workout_path(date: "2026-01-15")
-        expect(response).to redirect_to(root_path(month: "2026-01-01", highlight: "2026-01-15"))
-      end
+    it "creates a new workout log with exercise_set" do
+      expect {
+        post record_workout_path, params: { date: "2026-01-15", exercise_set_id: exercise_set.id }
+      }.to change(user.workout_logs, :count).by(1)
     end
 
-    context "when a workout log exists for the date" do
-      before do
-        user.workout_logs.create!(date: Date.new(2026, 1, 15))
-      end
+    it "sets the exercise_set_id" do
+      post record_workout_path, params: { date: "2026-01-15", exercise_set_id: exercise_set.id }
+      workout_log = user.workout_logs.last
+      expect(workout_log.exercise_set_id).to eq(exercise_set.id)
+    end
 
-      it "deletes the existing workout log" do
-        expect {
-          post toggle_workout_path(date: "2026-01-15")
-        }.to change(user.workout_logs, :count).by(-1)
-      end
-
-      it "redirects to the calendar" do
-        post toggle_workout_path(date: "2026-01-15")
-        expect(response).to redirect_to(root_path(month: "2026-01-01"))
-      end
+    it "redirects to the calendar with highlight" do
+      post record_workout_path, params: { date: "2026-01-15", exercise_set_id: exercise_set.id }
+      expect(response).to redirect_to(root_path(month: "2026-01-01", highlight: "2026-01-15"))
     end
   end
 

@@ -15,11 +15,20 @@ RSpec.describe WorkoutLog, type: :model do
       expect(workout_log.errors[:date]).to include("can't be blank")
     end
 
-    it 'is invalid with a duplicate date for the same user' do
-      user.workout_logs.create!(date: Date.current)
-      workout_log = user.workout_logs.new(date: Date.current)
+    it 'is invalid with a duplicate date and exercise_set for the same user' do
+      exercise_set = user.exercise_sets.create!(name: 'Test Set', rounds: 3)
+      user.workout_logs.create!(date: Date.current, exercise_set: exercise_set)
+      workout_log = user.workout_logs.new(date: Date.current, exercise_set: exercise_set)
       expect(workout_log).not_to be_valid
-      expect(workout_log.errors[:date]).to include("has already been taken")
+      expect(workout_log.errors[:exercise_set_id]).to include("has already been taken")
+    end
+
+    it 'allows same date with different exercise_sets' do
+      exercise_set1 = user.exercise_sets.create!(name: 'Set 1', rounds: 3)
+      exercise_set2 = user.exercise_sets.create!(name: 'Set 2', rounds: 2)
+      user.workout_logs.create!(date: Date.current, exercise_set: exercise_set1)
+      workout_log = user.workout_logs.new(date: Date.current, exercise_set: exercise_set2)
+      expect(workout_log).to be_valid
     end
 
     it 'allows same date for different users' do
