@@ -51,6 +51,19 @@ export default class extends Controller {
     }
   }
 
+  initSpeechSynthesis() {
+    try {
+      if ('speechSynthesis' in window) {
+        // Speak empty string to initialize and get permission on iOS
+        const utterance = new SpeechSynthesisUtterance('')
+        utterance.volume = 0
+        speechSynthesis.speak(utterance)
+      }
+    } catch (e) {
+      // Silently fail if speech synthesis is not supported
+    }
+  }
+
   reset() {
     this.currentRound = 1
     this.currentExerciseIndex = 0
@@ -94,6 +107,7 @@ export default class extends Controller {
   start() {
     if (this.isRunning || this.isCompleted) return
     this.initAudioContext()
+    this.initSpeechSynthesis()
     this.requestWakeLock()
     this.isRunning = true
 
@@ -298,14 +312,23 @@ export default class extends Controller {
 
   speak(text) {
     try {
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text)
-        utterance.lang = 'ja-JP'
-        utterance.rate = 1.0
-        speechSynthesis.speak(utterance)
+      if (!('speechSynthesis' in window)) return
+
+      const voices = speechSynthesis.getVoices()
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = 'ja-JP'
+      utterance.rate = 1.0
+      utterance.volume = 1.0
+
+      // Try to find a Japanese voice
+      const japaneseVoice = voices.find(voice => voice.lang.startsWith('ja'))
+      if (japaneseVoice) {
+        utterance.voice = japaneseVoice
       }
+
+      speechSynthesis.speak(utterance)
     } catch (e) {
-      console.log("Speech synthesis not supported:", e)
+      // Silently fail if speech synthesis is not supported
     }
   }
 }
