@@ -1,0 +1,71 @@
+<div class="max-w-md mx-auto p-4">
+  <!-- Header -->
+  <div class="flex items-center mb-6">
+    <%= link_to root_path(month: @date.beginning_of_month.to_s), class: "p-2 hover:bg-gray-100 rounded" do %>
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+    <% end %>
+    <h1 class="text-2xl font-bold flex-1 text-center mr-8">
+      <%= @date.strftime("%Y年 %m月 %d日") %>
+    </h1>
+  </div>
+
+  <!-- Date Status Badge -->
+  <% if @date == Date.current %>
+    <div class="text-center mb-6">
+      <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+        今日
+      </span>
+    </div>
+  <% end %>
+
+  <!-- Workout Logs List -->
+  <% if @workout_logs.empty? %>
+    <!-- Empty State -->
+    <div class="text-center py-12">
+      <div class="mb-4">
+        <svg class="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <p class="text-gray-500 mb-6">この日のトレーニング記録はありません</p>
+      <%= link_to timer_path, class: "inline-block px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors" do %>
+        タイマーを開始
+      <% end %>
+    </div>
+  <% else %>
+    <div class="space-y-4">
+      <% @workout_logs.each do |workout_log| %>
+        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+          <!-- Exercise Set Info -->
+          <div class="mb-3">
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">
+              <%= workout_log.exercise_set.name %>
+            </h2>
+            <div class="text-sm text-gray-500">
+              <%= pluralize(workout_log.exercise_set.rounds, "round") %> &bull;
+              <%= pluralize(workout_log.exercise_set.exercise_items.size, "exercise") %> &bull;
+              <%= workout_log.created_at.strftime("%H:%M") %>
+            </div>
+          </div>
+
+          <!-- Exercise Items -->
+          <div class="flex flex-wrap gap-2">
+            <% workout_log.exercise_set.exercise_items.each do |item| %>
+              <span class="px-2 py-1 bg-blue-100 text-blue-700 text-sm rounded">
+                <%= item.name %> (<%= item.exercise_seconds %>s/<%= item.rest_seconds %>s)
+              </span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Summary -->
+    <div class="mt-6 p-4 bg-gray-50 rounded-lg text-center">
+      <span class="text-2xl font-bold text-green-600"><%= @workout_logs.size %></span>
+      <span class="text-gray-600"> 回のトレーニング</span>
+    </div>
+  <% end %>
+</div>

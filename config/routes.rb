@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   root "workout_logs#index"
 
   post "workout_logs/record", to: "workout_logs#record", as: :record_workout
+  get "workout_logs/:date", to: "workout_logs#show", as: :workout_log_date
   get "timer", to: "timer#show", as: :timer
   get "timer/:exercise_set_id", to: "timer#show", as: :timer_with_set
 

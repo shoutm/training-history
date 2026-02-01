@@ -66,6 +66,83 @@ RSpec.describe "WorkoutLogs", type: :request do
     end
   end
 
+  describe "GET /workout_logs/:date" do
+    let(:date) { Date.new(2026, 1, 15) }
+    let!(:exercise_set) do
+      set = user.exercise_sets.create!(name: "Morning Routine", rounds: 2)
+      set.exercise_items.create!(name: "Push-ups", exercise_seconds: 30, rest_seconds: 15, position: 0)
+      set.exercise_items.create!(name: "Squats", exercise_seconds: 40, rest_seconds: 20, position: 1)
+      set
+    end
+
+    context "with workout logs for the date" do
+      let!(:workout_log1) do
+        user.workout_logs.create!(date: date, exercise_set: exercise_set)
+      end
+      let!(:workout_log2) do
+        other_set = user.exercise_sets.create!(name: "Evening Routine", rounds: 1)
+        other_set.exercise_items.create!(name: "Plank", exercise_seconds: 60, rest_seconds: 0, position: 0)
+        user.workout_logs.create!(date: date, exercise_set: other_set)
+      end
+
+      it "returns http success" do
+        get workout_log_date_path(date)
+        expect(response).to have_http_status(:success)
+      end
+
+      it "displays the date" do
+        get workout_log_date_path(date)
+        expect(response.body).to include("2026年 01月 15日")
+      end
+
+      it "displays all workout logs for the date" do
+        get workout_log_date_path(date)
+        expect(response.body).to include("Morning Routine")
+        expect(response.body).to include("Evening Routine")
+      end
+
+      it "displays exercise details" do
+        get workout_log_date_path(date)
+        expect(response.body).to include("Push-ups")
+        expect(response.body).to include("Squats")
+        expect(response.body).to include("2 rounds")
+      end
+    end
+
+    context "without workout logs for the date" do
+      it "displays empty state" do
+        get workout_log_date_path(date)
+        expect(response.body).to include("この日のトレーニング記録はありません")
+      end
+
+      it "shows link to timer" do
+        get workout_log_date_path(date)
+        expect(response.body).to include("タイマーを開始")
+        expect(response.body).to include('href="/timer"')
+      end
+    end
+
+    context "with invalid date" do
+      it "redirects to index with error message" do
+        get "/workout_logs/invalid-date"
+        expect(response).to redirect_to(root_path)
+        follow_redirect!
+        expect(response.body).to include("Invalid date")
+      end
+    end
+
+    context "without authentication" do
+      before do
+        delete logout_path
+      end
+
+      it "redirects to login page" do
+        get workout_log_date_path(date)
+        expect(response).to redirect_to(login_path)
+      end
+    end
+  end
+
   describe "without authentication" do
     before do
       # Clear session

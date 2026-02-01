@@ -8,6 +8,16 @@ class WorkoutLogsController < ApplicationController
     @next_month = @current_month.next_month
   end
 
+  def show
+    @date = Date.parse(params[:date])
+    @workout_logs = current_user.workout_logs
+      .where(date: @date)
+      .includes(exercise_set: :exercise_items)
+      .order(:created_at)
+  rescue ArgumentError
+    redirect_to root_path, alert: "Invalid date"
+  end
+
   def record
     date = Date.parse(params[:date])
     exercise_set_id = params[:exercise_set_id]

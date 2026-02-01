@@ -42,20 +42,41 @@
       <% is_future = date > Date.current %>
       <% is_highlighted = date == highlight_date %>
 
-      <div class="relative w-full aspect-square flex flex-col items-center justify-center rounded-lg
-                  <%= is_today ? 'ring-2 ring-blue-500' : '' %>
-                  <%= entries_count > 0 ? 'bg-green-100' : 'bg-gray-50' %>
-                  <%= is_future ? 'opacity-40' : '' %>
-                  <%= is_highlighted ? 'animate-highlight ring-4 ring-green-400' : '' %>">
-        <span class="text-sm <%= is_today ? 'font-bold text-blue-600' : 'text-gray-700' %>">
-          <%= date.day %>
-        </span>
-        <% if entries_count > 0 %>
-          <span class="absolute top-1 right-1 w-5 h-5 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
-            <%= entries_count %>
+      <%
+        # Build CSS classes
+        base_classes = "relative w-full aspect-square flex flex-col items-center justify-center rounded-lg"
+        today_ring = is_today ? 'ring-2 ring-blue-500' : ''
+        bg_color = entries_count > 0 ? 'bg-green-100' : 'bg-gray-50'
+        day_text_classes = is_today ? 'font-bold text-blue-600' : 'text-gray-700'
+      %>
+
+      <% if is_future %>
+        <div class="<%= [base_classes, today_ring, bg_color, 'opacity-40'].join(' ') %>">
+          <span class="text-sm <%= day_text_classes %>">
+            <%= date.day %>
           </span>
+          <% if entries_count > 0 %>
+            <span class="absolute top-1 right-1 w-5 h-5 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              <%= entries_count %>
+            </span>
+          <% end %>
+        </div>
+      <% else %>
+        <%
+          highlight_ring = is_highlighted ? 'animate-highlight ring-4 ring-green-400' : ''
+          link_classes = [base_classes, 'transition-all hover:ring-2 hover:ring-blue-300', today_ring, bg_color, highlight_ring].join(' ')
+        %>
+        <%= link_to workout_log_date_path(date), class: link_classes do %>
+          <span class="text-sm <%= day_text_classes %>">
+            <%= date.day %>
+          </span>
+          <% if entries_count > 0 %>
+            <span class="absolute top-1 right-1 w-5 h-5 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              <%= entries_count %>
+            </span>
+          <% end %>
         <% end %>
-      </div>
+      <% end %>
     <% end %>
   </div>
 
