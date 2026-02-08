@@ -1,7 +1,14 @@
 <% highlight_date = params[:highlight] ? Date.parse(params[:highlight]) : nil %>
 
-<div class="max-w-md mx-auto p-4">
+<div class="max-w-md mx-auto p-4"
+     data-controller="swipe"
+     data-swipe-prev-url-value="<%= root_path(month: @prev_month.to_s) %>"
+     data-swipe-next-url-value="<%= root_path(month: @next_month.to_s) %>"
+     data-action="touchstart->swipe#touchstart touchend->swipe#touchend">
   <h1 class="text-2xl font-bold text-center mb-6">Training History</h1>
+
+  <!-- Calendar section (swipe animation target) -->
+  <div data-swipe-target="calendar" class="overflow-hidden">
 
   <!-- Navigation -->
   <div class="flex justify-between items-center mb-4">
@@ -88,6 +95,8 @@
     </div>
     <p class="text-center text-sm text-gray-500 mt-1">今月のトレーニング達成率</p>
   </div>
+
+  </div><!-- end calendar section -->
 
   <!-- Timer link -->
   <div class="mt-6 text-center">

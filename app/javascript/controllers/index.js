@@ -16,5 +16,8 @@ application.register("notification-setting", NotificationSettingController)
 import PushNotificationController from "./push_notification_controller"
 application.register("push-notification", PushNotificationController)
 
+import SwipeController from "./swipe_controller"
+application.register("swipe", SwipeController)
+
 import TimerController from "./timer_controller"
 application.register("timer", TimerController)

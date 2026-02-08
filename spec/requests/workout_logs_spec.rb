@@ -37,6 +37,15 @@ RSpec.describe "WorkoutLogs", type: :request do
       expect(response.body).to include("2")
     end
 
+    it "includes swipe controller data attributes" do
+      get root_path(month: "2026-03-01")
+      expect(response.body).to include('data-controller="swipe"')
+      expect(response.body).to include("data-swipe-prev-url-value")
+      expect(response.body).to include("data-swipe-next-url-value")
+      expect(response.body).to include("month=2026-02-01")
+      expect(response.body).to include("month=2026-04-01")
+    end
+
     it "only shows current user's workout logs" do
       other_user = User.create!(provider: 'google_oauth2', uid: '456', name: 'Other', email: 'other@example.com')
       other_user.workout_logs.create!(date: Date.new(2026, 1, 15))
