@@ -41,13 +41,13 @@ export default class extends Controller {
     }
   }
 
-  initAudioContext() {
+  async initAudioContext() {
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
     }
     // Safari requires resume after user interaction
     if (this.audioContext.state === "suspended") {
-      this.audioContext.resume()
+      await this.audioContext.resume()
     }
   }
 
@@ -104,9 +104,9 @@ export default class extends Controller {
     return null
   }
 
-  start() {
+  async start() {
     if (this.isRunning || this.isCompleted) return
-    this.initAudioContext()
+    await this.initAudioContext()
     this.initSpeechSynthesis()
     this.requestWakeLock()
     this.isRunning = true
@@ -290,6 +290,9 @@ export default class extends Controller {
   playTone(frequency, duration) {
     try {
       if (!this.audioContext) return
+      if (this.audioContext.state === "suspended") {
+        this.audioContext.resume()
+      }
 
       const oscillator = this.audioContext.createOscillator()
       const gainNode = this.audioContext.createGain()
