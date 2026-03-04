@@ -106,8 +106,11 @@ export default class extends Controller {
 
   async start() {
     if (this.isRunning || this.isCompleted) return
-    await this.initAudioContext()
+    // IMPORTANT: initSpeechSynthesis() must be called before any `await`
+    // because iOS Safari requires speechSynthesis to be initialized
+    // within a synchronous user gesture context.
     this.initSpeechSynthesis()
+    await this.initAudioContext()
     this.requestWakeLock()
     this.isRunning = true
 
