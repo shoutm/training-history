@@ -3,8 +3,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
            Rails.application.credentials.dig(:google, :client_id),
            Rails.application.credentials.dig(:google, :client_secret),
            {
-             scope: "email,profile",
-             prompt: "select_account"
+             scope: "email,profile"
            }
 end
 
