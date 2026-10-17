@@ -14,7 +14,7 @@ A workout tracking web application with an interval timer for circuit training.
 ## Tech Stack
 
 - Ruby 4.0.7
-- Rails 8.1.1
+- Rails 8.1.4
 - Hotwire (Turbo + Stimulus)
 - TailwindCSS
 - SQLite (development) / PostgreSQL (production)
