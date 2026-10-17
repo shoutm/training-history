@@ -42,6 +42,9 @@ npm install
 # Setup database
 bin/rails db:setup
 
+# Enable the pre-push hook that runs bin/ci (also done by bin/setup)
+git config core.hooksPath .githooks
+
 # Setup credentials (for Google OAuth)
 EDITOR="code --wait" bin/rails credentials:edit
 ```
@@ -73,6 +76,14 @@ Visit http://localhost:3000
 ```bash
 bundle exec rspec
 ```
+
+To run the same checks as GitHub Actions CI (RuboCop, bundler-audit, Brakeman, asset build, RSpec):
+
+```bash
+bin/ci
+```
+
+`bin/ci` runs automatically before `git push` via `.githooks/pre-push`. Keep `config/ci.rb` in sync with `.github/workflows/ci.yml`.
 
 ## Deployment
 

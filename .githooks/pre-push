@@ -1,0 +1,4 @@
+#!/bin/sh
+# Run the same checks as GitHub Actions CI before pushing.
+# Skip in an emergency with: git push --no-verify
+exec bin/ci

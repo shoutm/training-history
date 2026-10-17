@@ -1,23 +1,15 @@
 # Run using bin/ci
+# Keep these steps in sync with .github/workflows/ci.yml so that a local pass means a CI pass.
+# bin/ci also runs automatically before `git push` via .githooks/pre-push (enabled by bin/setup).
 
 CI.run do
-  step "Setup", "bin/setup --skip-server"
-
   step "Style: Ruby", "bin/rubocop"
 
-  step "Security: Gem audit", "bin/bundler-audit"
-  step "Security: Yarn vulnerability audit", "yarn audit"
-  step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  # Fetch the latest advisory database first; a stale local copy hides vulnerabilities CI will report.
+  step "Security: Gem audit", "bin/bundler-audit check --update"
+  # bin/brakeman runs with --ensure-latest, so this also fails when a newer Brakeman is released.
+  step "Security: Brakeman code analysis", "bin/brakeman --no-pager"
 
-  step "Tests: Rails", "bin/rails test"
-  step "Tests: System", "bin/rails test:system"
-  step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
-
-  # Optional: set a green GitHub commit status to unblock PR merge.
-  # Requires the `gh` CLI and `gh extension install basecamp/gh-signoff`.
-  # if success?
-  #   step "Signoff: All systems go. Ready for merge and deploy.", "gh signoff"
-  # else
-  #   failure "Signoff: CI failed. Do not merge or deploy.", "Fix the issues and try again."
-  # end
+  step "Build: Assets", "npm run build && npm run build:css"
+  step "Tests: RSpec", "env RAILS_ENV=test bin/rails db:test:prepare && bundle exec rspec"
 end
