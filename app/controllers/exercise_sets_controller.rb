@@ -15,7 +15,7 @@ class ExerciseSetsController < ApplicationController
     if @exercise_set.save
       redirect_to exercise_sets_path, notice: "プリセットを作成しました"
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -26,7 +26,7 @@ class ExerciseSetsController < ApplicationController
     if @exercise_set.update(exercise_set_params)
       redirect_to exercise_sets_path, notice: "プリセットを更新しました"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

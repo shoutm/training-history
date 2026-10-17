@@ -42,7 +42,7 @@ RSpec.describe "PushSubscriptions", type: :request do
 
     it "returns error for invalid params" do
       post push_subscriptions_path, params: { endpoint: '' }, as: :json
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 
