@@ -13,7 +13,7 @@ A workout tracking web application with an interval timer for circuit training.
 
 ## Tech Stack
 
-- Ruby 4.0.7
+- Ruby 4.0.9
 - Rails 8.1.4
 - Hotwire (Turbo + Stimulus)
 - TailwindCSS
@@ -24,7 +24,7 @@ A workout tracking web application with an interval timer for circuit training.
 
 ### Prerequisites
 
-- Ruby 4.0.7
+- Ruby 4.0.9
 - Node.js
 - Bundler
 
